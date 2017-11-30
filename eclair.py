@@ -48,30 +48,19 @@ class EclairD(TailableProc):
         self.cmd_line = [
             '/usr/lib/jvm/java-8-openjdk-amd64/bin/java',
             '-Declair.datadir={}'.format(lightning_dir),
+            '-Declair.chain=regtest',
             '-Declair.printToConsole=true',
+            '-Declair.server.port={}'.format(self.port),
+            '-Declair.api.port={}'.format(self.rpc_port),
+            '-Declair.bitcoind.rpcport=28332',
+            '-Declair.bitcoind.rpcuser=rpcuser',
+            '-Declair.bitcoind.rpcpassword=rpcpass',
             '-jar',
             'bin/eclair.jar'
         ]
 
         if not os.path.exists(lightning_dir):
             os.makedirs(lightning_dir)
-
-        # Adapt the config and store it
-        config = open('src/eclair/eclair-core/src/main/resources/reference.conf').read()
-        replacements = [
-            ('9735', str(port)),
-            ('18332', str(28332)),
-            ('8080', str(self.rpc_port)),
-            ('"test"', '"regtest"'),
-            ('"foo"', '"rpcuser"'),
-            ('"bar"', '"rpcpass"'),
-        ]
-
-        for old, new in replacements:
-            config = config.replace(old, new)
-
-        with open(os.path.join(lightning_dir, "eclair.conf"), "w") as f:
-            f.write(config)
 
     def start(self):
         TailableProc.start(self)

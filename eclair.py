@@ -51,7 +51,9 @@ class EclairD(TailableProc):
             '-Declair.chain=regtest',
             '-Declair.printToConsole=true',
             '-Declair.server.port={}'.format(self.port),
+            '-Declair.api.enabled=true',
             '-Declair.api.port={}'.format(self.rpc_port),
+            '-Declair.api.password=foobar',
             '-Declair.bitcoind.rpcport=28332',
             '-Declair.bitcoind.rpcuser=rpcuser',
             '-Declair.bitcoind.rpcpassword=rpcpass',
@@ -205,7 +207,7 @@ class EclairRpc(object):
         headers = {'Content-type': 'application/json'}
         data = json.dumps({'method': method, 'params': params})
         logging.info("Calling %s with params=%s", method, params)
-        reply = self.session.post(self.url, data=data, headers=headers)
+        reply = self.session.post(self.url, data=data, headers=headers, auth=('eclair-cli', 'foobar'))
 
         if reply.status_code != 200:
             raise ValueError("Server returned an unknown error: {} ({})".format(

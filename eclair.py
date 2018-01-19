@@ -112,7 +112,7 @@ class EclairNode(object):
         return info['nodeId']
 
     def openchannel(self, node_id, host, port, satoshis):
-        r = self.rpc._call('open', [node_id, host, port, satoshis, 0])
+        r = self.rpc._call('open', [node_id, satoshis])
         time.sleep(5)
         self.bitcoin.rpc.generate(6)
         time.sleep(5)
@@ -147,8 +147,8 @@ class EclairNode(object):
         self_id = self.id()
         remote_id = remote.id()
         for c in self.rpc.channels():
-            channel = self.rpc.channel(c)
-            if channel['nodeid'] == remote_id:
+            channel = self.rpc.channel(c['channelId'])
+            if channel['nodeId'] == remote_id:
                 self.logger.debug("Channel {} -> {} state: {}".format(self_id, remote_id, channel['state']))
                 return channel['state'] == 'NORMAL'
         self.logger.warning("Channel {} -> {} not found".format(self_id, remote_id))
@@ -162,7 +162,7 @@ class EclairNode(object):
         return channels
 
     def getnodes(self):
-        return set(self.rpc.allnodes())
+        return set([n['nodeId'] for n in self.rpc.allnodes()])
 
     def invoice(self, amount):
         req = self.rpc._call("receive", [amount, "invoice1"])
@@ -221,7 +221,7 @@ class EclairRpc(object):
             return reply.json()['result']
 
     def peers(self):
-        return self._call('peers', [])
+        return [p['nodeId'] for p in self._call('peers', [])]
 
     def channels(self):
         return self._call('channels', [])
